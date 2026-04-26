@@ -10,23 +10,22 @@ const {
     ButtonBuilder, 
     ButtonStyle 
 } = require('discord.js');
-
-// IMPORTANTE: Asegúrate de que el archivo se llame 'obfuscator.js'
-const { obfuscate } = require('./obfuscator'); 
+const { obfuscate } = require('./obfuscator');
 const http = require('http');
 const https = require('https');
 
-// Servidor para Railway (Evita que el bot se apague)
+// --- RAILWAY KEEP-ALIVE ---
 const PORT = process.env.PORT || 3000;
 http.createServer((req, res) => { 
     res.writeHead(200); 
-    res.end('VVMER Bot is Running'); 
+    res.end('VVMER PROTECTOR ONLINE'); 
 }).listen(PORT, '0.0.0.0');
 
+// --- CONFIGURATION ---
 const TOKEN = process.env.DISCORD_BOT_TOKEN;
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-// Función para generar la fila de estrellas
+// --- STAR RATING SYSTEM ---
 function createStarRow(rating = 0) {
     const row = new ActionRowBuilder();
     for (let i = 1; i <= 5; i++) {
@@ -40,24 +39,32 @@ function createStarRow(rating = 0) {
     return row;
 }
 
+// --- SLASH COMMAND SETUP ---
 const command = new SlashCommandBuilder()
     .setName('obf')
-    .setDescription('Protect your code with VVMER + UnveilX')
+    .setDescription('Protect your Lua code with VVMER + UnveilX')
     .addStringOption(o => o.setName('code').setDescription('Paste your Lua code').setRequired(false))
     .addAttachmentOption(o => o.setName('file').setDescription('Upload a .lua file').setRequired(false));
 
+// --- BOT READY & REGISTER COMMANDS ---
 client.once('ready', async () => {
     try {
         const rest = new REST({ version: '10' }).setToken(TOKEN);
-        await rest.put(Routes.applicationCommands(client.user.id), { body: [command.toJSON()] });
-        console.log(`--- VVMER ONLINE ---`);
-        console.log(`Bot logueado como: ${client.user.tag}`);
+        console.log('Registering commands...');
+        
+        await rest.put(
+            Routes.applicationCommands(client.user.id), 
+            { body: [command.toJSON()] }
+        );
+        
+        console.log(`--- VVMER PROTECTOR READY ---`);
+        console.log(`Logged in as: ${client.user.tag}`);
     } catch (error) {
-        console.error("Error al registrar comandos:", error);
+        console.error("Command registration error:", error);
     }
 });
 
-// Función para descargar archivos adjuntos
+// --- HELPER TO DOWNLOAD FILES ---
 function fetchURL(url) {
     return new Promise((resolve, reject) => {
         const mod = url.startsWith('https') ? https : http;
@@ -69,31 +76,39 @@ function fetchURL(url) {
     });
 }
 
+// --- INTERACTION HANDLER ---
 client.on('interactionCreate', async interaction => {
+    
+    // Command Execution
     if (interaction.isChatInputCommand() && interaction.commandName === 'obf') {
         const codeOption = interaction.options.getString('code');
         const fileOption = interaction.options.getAttachment('file');
 
         if (!codeOption && !fileOption) {
-            return interaction.reply({ content: '❌ Debes proporcionar código o un archivo .lua', ephemeral: true });
+            return interaction.reply({ content: '❌ Error: You must provide a code snippet or a .lua file.', ephemeral: true });
         }
 
         await interaction.deferReply();
 
         try {
-            // Obtener el código fuente
             let src = fileOption ? await fetchURL(fileOption.url) : codeOption;
             
-            // EJECUTAR OFUSCACIÓN
+            // RUN VVMER OBFUSCATION
             const obfuscated = obfuscate(src);
             
             const buf = Buffer.from(obfuscated, 'utf-8');
-            const attachment = new AttachmentBuilder(buf, { name: 'obfuscated.lua' });
+            const attachment = new AttachmentBuilder(buf, { name: 'protected_vvmer.lua' });
 
             const embed = new EmbedBuilder()
-                .setTitle("🛡️ VVMER Obfuscator")
-                .setColor(0x00FF00)
-                .setDescription(`**Status:** Success\n**Protection:** UnveilX + VM 18x\n\nPor favor, califica el servicio:`)
+                .setTitle("🛡️ VVMER PROTECTOR")
+                .setThumbnail(client.user.displayAvatarURL())
+                .setColor(0x2f3136)
+                .addFields(
+                    { name: 'Status', value: ' Success', inline: true },
+                    { name: 'Protection', value:', inline: true }
+                )
+                .setDescription(`Your code has been encrypted and wrapped in a Virtual Machine.\n\n**Rate our service:**`)
+                .setFooter({ text: 'VVMER Obfuscator Engine' })
                 .setTimestamp();
 
             await interaction.editReply({
@@ -103,14 +118,19 @@ client.on('interactionCreate', async interaction => {
             });
 
         } catch (e) {
-            console.error("Error en ofuscación:", e);
-            await interaction.editReply('❌ Error interno al ofuscar el código.');
+            console.error(e);
+            await interaction.editReply('❌ **Internal Error:** Could not process obfuscation.');
         }
     }
 
+    // Rating Buttons
     if (interaction.isButton() && interaction.customId.startsWith('star_')) {
         const rating = parseInt(interaction.customId.split('_')[1]);
+        
+        const embed = EmbedBuilder.from(interaction.message.embeds[0]);
+        
         await interaction.update({
+            embeds: [embed],
             components: [createStarRow(rating)]
         });
     }
