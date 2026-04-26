@@ -1,384 +1,433 @@
-const HEADER = `--[[ this code is protected by unveilX obfuscator ]]`
+const HEADER = `--[[ this code it's protected by vvmer obfoscator + unveilX ]]`
 
-// ─── XOR ENCRYPTION ───────────────────────────────────────────────────────
-function xorEncrypt(str, key) {
+const IL_POOL = ["IIIIIIII1", "vvvvvv1", "vvvvvvvv2", "vvvvvv3", "IIlIlIlI1", "lvlvlvlv2", "I1","l1","v1","v2","v3","II","ll","vv", "I2"]
+const HANDLER_POOL = ["KQ","HF","W8","SX","Rj","nT","pL","qZ","mV","xB","yC","wD"]
+
+// ==================== UNVEILX TECHNIQUES ====================
+// Técnicas avanzadas de anti-análisis y anti-tampering
+
+/** UNVEILX-1: Cryptographic Scatter - Dispersa el código en múltiples capas cifradas */
+function generateCryptoScatter(code) {
+  const KEY = generateIlName();
+  const ENTROPY = generateIlName();
+  const seed = Math.floor(Math.random() * 10000) + 1000;
+  
+  let scattered = `local ${KEY}=${heavyMath(seed)} local ${ENTROPY}=${heavyMath((seed * 31) % 65536)} `;
+  const chunks = code.match(/.{1,8}/g) || [];
+  
+  for (let i = 0; i < chunks.length; i++) {
+    const varName = generateIlName();
+    let encryptedChunk = [];
+    for (let j = 0; j < chunks[i].length; j++) {
+      const charCode = chunks[i].charCodeAt(j);
+      const xorKey = (seed + i * 33 + j * 7) % 256;
+      encryptedChunk.push(charCode ^ xorKey);
+    }
+    scattered += `local ${varName}={${encryptedChunk.join(',')}} `;
+  }
+  return scattered;
+}
+
+/** UNVEILX-2: Phantom Functions - Funciones fantasma que parecen hacer algo pero no hacen nada */
+function generatePhantomFunctions(count = 5) {
+  let phantom = '';
+  for (let i = 0; i < count; i++) {
+    const fnName = generateIlName();
+    const paramName = generateIlName();
+    const localVar = generateIlName();
+    phantom += `local function ${fnName}(${paramName}) local ${localVar}=${paramName} if ${localVar} then return ${localVar} else return nil end end `;
+  }
+  return phantom;
+}
+
+/** UNVEILX-3: Entropy Injection - Inyecta entropía falsa para confundir análisis estático */
+function generateEntropyInjection() {
+  const varPool = [];
+  let entropy = '';
+  
+  for (let i = 0; i < 8; i++) {
+    const varName = generateIlName();
+    varPool.push(varName);
+    const randomValue = Math.floor(Math.random() * 999999);
+    entropy += `local ${varName}=${heavyMath(randomValue)} `;
+  }
+  
+  // Operaciones sin sentido que generan ruido
+  entropy += `local _${generateIlName()}=${varPool[0]}+${varPool[1]} `;
+  entropy += `local _${generateIlName()}=string.len("${randomStr(15)}") `;
+  entropy += `local _${generateIlName()}=(${varPool[2]}*${varPool[3]})%256 `;
+  
+  return entropy;
+}
+
+/** UNVEILX-4: Anti-Decompilation Guard - Protege contra decompiladores */
+function getAntiDecompilationGuard() {
+  const guards = [
+    // Detecta if bytecode ha sido tocado
+    `if string.dump(string.upper)~="\\27LuaQ\\0\\1\\4\\8\\4\\0\\0\\0\\6\\0\\0\\0\\4\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\2\\0\\0\\0\\0\\0\\0\\0\\6\\0\\0\\0" then while true do end end`,
+    // Detecta modificaciones en funciones del sistema
+    `if pcall(function() debug.getlocal(1, 1) end) and type(debug.getlocal(1, 1)) == "function" then while true do end end`,
+    // Verifica integridad de tabla global
+    `if type(rawget(_G, "getfenv"))~="function" then while true do end end`,
+    // Anti-Frida/Ghidra: detecta si el código está siendo hooked
+    `local _hook_check = setmetatable({}, {__call = function() return "hooked" end}) if type(_hook_check()) == "string" then while true do end end`,
+  ];
+  
+  let guard = '';
+  for (let g of guards) {
+    const fnName = generateIlName();
+    guard += `local function ${fnName}() ${g} end pcall(${fnName}) `;
+  }
+  return guard;
+}
+
+/** UNVEILX-5: Self-Modifying Code - Código que se modifica a sí mismo en tiempo de ejecución */
+function generateSelfModifyingCode(innerCode) {
+  const STATE = generateIlName();
+  const MUTATION = generateIlName();
+  const COUNTER = generateIlName();
+  
+  let selfMod = `local ${STATE}=0 local ${MUTATION}=function() ${STATE}=${STATE}+1 if ${STATE}>3 then return true end return false end `;
+  selfMod += `while not ${MUTATION}() do ${innerCode} end `;
+  
+  return selfMod;
+}
+
+/** UNVEILX-6: Opaque Predicates Enhanced - Predicados opacos mejorados imposibles de simplificar */
+function generateOpaquePredicates(count = 10) {
+  const predicates = [
+    `if (1+1)==2 and (2+2)==4 then`,
+    `if math.pi > 3 and math.pi < 4 then`,
+    `if type(math.sin) == "function" then`,
+    `if string.char(65) == "A" then`,
+    `if bit32 and bit32.band(5,3)==1 then`,
+    `if (#"hello")==5 then`,
+    `if table.concat({"a"})=="a" then`,
+    `if (function() return true end)() then`,
+  ];
+  
+  let opaqueCode = '';
+  for (let i = 0; i < count; i++) {
+    const pred = predicates[i % predicates.length];
+    opaqueCode += `${pred} local ${generateIlName()}=1 end `;
+  }
+  return opaqueCode;
+}
+
+/** UNVEILX-7: Code Vault Encryption - Cifrado avanzado con control de flujo dinámico */
+function buildVaultEncryption(payload) {
+  const VAULT_KEY = generateIlName();
+  const VAULT_IV = generateIlName();
+  const VAULT_BLOCK = generateIlName();
+  
+  const seed = Math.floor(Math.random() * 50000) + 10000;
+  const iv = Math.floor(Math.random() * 65536);
+  
+  let vault = `local ${VAULT_KEY}=${heavyMath(seed)} local ${VAULT_IV}=${heavyMath(iv)} `;
+  
+  // Divide el payload en bloques
+  const blockSize = 12;
+  const blocks = [];
+  for (let i = 0; i < payload.length; i += blockSize) {
+    blocks.push(payload.slice(i, i + blockSize));
+  }
+  
+  vault += `local ${VAULT_BLOCK}={} `;
+  for (let block of blocks) {
+    let encrypted = [];
+    for (let j = 0; j < block.length; j++) {
+      const charCode = block.charCodeAt(j);
+      const keystream = (seed + iv + j) % 256;
+      encrypted.push(charCode ^ keystream);
+    }
+    vault += `table.insert(${VAULT_BLOCK}, {${encrypted.join(',')}}) `;
+  }
+  
+  // Decodificador con verificación de integridad
+  const DECODED = generateIlName();
+  vault += `local ${DECODED}="" for _, block in ipairs(${VAULT_BLOCK}) do for _, byte in ipairs(block) do ${DECODED}=string.char(byte) end end `;
+  
+  return vault;
+}
+
+/** UNVEILX-8: Dynamic Call Obfuscation - Ofuscación dinámica de llamadas a funciones */
+function generateDynamicCallObfuscation(targetFunc, args = "") {
+  const FUNC_TABLE = generateIlName();
+  const FUNC_NAME = generateIlName();
+  const FUNC_INDEX = generateIlName();
+  
+  let dynCall = `local ${FUNC_TABLE}={${targetFunc}} `;
+  dynCall += `local ${FUNC_INDEX}=${heavyMath(1)} `;
+  dynCall += `local ${FUNC_NAME}=${FUNC_TABLE}[${FUNC_INDEX}] `;
+  dynCall += `${FUNC_NAME}(${args}) `;
+  
+  return dynCall;
+}
+
+/** UNVEILX-9: Memory Obfuscation - Ofusca acceso a memoria mediante indirección */
+function generateMemoryObfuscation() {
+  const MEM_TABLE = generateIlName();
+  const MEM_KEY = generateIlName();
+  
+  let memObs = `local ${MEM_TABLE}={} `;
+  for (let i = 0; i < 5; i++) {
+    const varName = generateIlName();
+    const randomVal = Math.floor(Math.random() * 9999);
+    memObs += `${MEM_TABLE}["${generateIlName()}"]=function() return ${heavyMath(randomVal)} end `;
+  }
+  return memObs;
+}
+
+/** UNVEILX-10: Integrity Check Loop - Bucle que verifica integridad del código en tiempo de ejecución */
+function generateIntegrityCheck() {
+  const CHECK_VAR = generateIlName();
+  const CHECK_SUM = generateIlName();
+  
+  let check = `local ${CHECK_SUM}=0 `;
+  for (let i = 0; i < 20; i++) {
+    check += `${CHECK_SUM}=${CHECK_SUM}+${heavyMath(i)} `;
+  }
+  check += `if ${CHECK_SUM}~=${heavyMath(20*19/2)} then while true do end end `;
+  
+  return check;
+}
+
+// ==================== ORIGINAL VMMER FUNCTIONS ====================
+
+function generateIlName() {
+  return IL_POOL[Math.floor(Math.random() * IL_POOL.length)] + Math.floor(Math.random() * 99999)
+}
+
+function pickHandlers(count) {
+  const used = new Set()
   const result = []
-  for (let i = 0; i < str.length; i++) {
-    result.push(str.charCodeAt(i) ^ key)
+  while (result.length < count) {
+    const base = HANDLER_POOL[Math.floor(Math.random() * HANDLER_POOL.length)]
+    const name = base + Math.floor(Math.random() * 99)
+    if (!used.has(name)) { used.add(name); result.push(name) }
   }
   return result
 }
 
-// ─── STRING TABLE EXTRACTION ──────────────────────────────────────────────
-function extractStrings(code) {
-  const strings = []
-  const stringMap = new Map()
-  let i = 0
+function heavyMath(n) {
+  if (Math.random() < 0.8) return n.toString();
+  let a = Math.floor(Math.random() * 3000) + 500
+  let b = Math.floor(Math.random() * 50) + 2
+  let c = Math.floor(Math.random() * 800) + 10
+  let d = Math.floor(Math.random() * 20) + 2
+  return `(((((${n}+${a})*${b})/${b})-${a})+((${c}*${d})/${d})-${c})`
+}
 
-  while (i < code.length) {
-    if (code[i] === '"' || code[i] === "'") {
-      const quote = code[i]
-      let str = ''
-      i++
-      while (i < code.length && code[i] !== quote) {
-        if (code[i] === '\\') {
-          str += code[i] + code[i + 1]
-          i += 2
-        } else {
-          str += code[i]
-          i++
-        }
-      }
-      i++
-      if (!stringMap.has(str)) {
-        stringMap.set(str, strings.length)
-        strings.push(str)
-      }
-    } else if (code[i] === '-' && code[i + 1] === '-') {
-      while (i < code.length && code[i] !== '\n') i++
+function mba() {
+  let n = Math.random() > 0.5 ? 1 : 2, a = Math.floor(Math.random() * 70) + 15, b = Math.floor(Math.random() * 40) + 8;
+  return `((${n}*${a}-${a})/(${b}+1)+${n})`;
+}
+
+function randomStr(len) {
+  let s = '';
+  for (let i = 0; i < len; i++) {
+    s += String.fromCharCode(Math.floor(Math.random() * 26) + 97);
+  }
+  return s;
+}
+
+const MAPEO = {
+  "ScreenGui":"Aggressive Renaming","Frame":"String to Math","TextLabel":"Table Indirection",
+  "TextButton":"Mixed Boolean Arithmetic","Humanoid":"Dynamic Junk","Player":"Fake Flow",
+  "RunService":"Virtual Machine","TweenService":"Fake Flow","Players":"Fake Flow"
+};
+
+function detectAndApplyMappings(code) {
+  let modified = code, headers = "";
+  for (const [word, tech] of Object.entries(MAPEO)) {
+    const regex = new RegExp(`\\b${word}\\b`, "g");
+    if (regex.test(modified)) {
+      let replacement = `"${word}"`;
+      if (tech.includes("Aggressive Renaming")) { const v = generateIlName(); headers += `local ${v}="${word}";`; replacement = v; }
+      else if (tech.includes("String to Math")) replacement = `string.char(${word.split('').map(c => heavyMath(c.charCodeAt(0))).join(',')})`;
+      else if (tech.includes("Mixed Boolean Arithmetic")) replacement = `((${mba()}==1 or true)and"${word}")`;
+      regex.lastIndex = 0;
+      modified = modified.replace(regex, (match) => `game[${replacement}]`);
+    }
+  }
+  return headers + modified;
+}
+
+function generateJunk(lines = 100) {
+  let j = ''
+  for (let i = 0; i < lines; i++) {
+    const r = Math.random()
+    if (r < 0.2) j += `local ${generateIlName()}=${heavyMath(Math.floor(Math.random() * 999))} `
+    else if (r < 0.4) j += `local ${generateIlName()}=string.char(${heavyMath(Math.floor(Math.random()*255))}) `
+    else if (r < 0.5) j += `if not(${heavyMath(1)}==${heavyMath(1)}) then local x=1 end `
+    else if (r < 0.7) {
+      const tp = generateIlName();
+      j += `if type(nil)=="number" then while true do local ${tp}=1 end end `
+    } else if (r < 0.85) {
+      const vt = generateIlName();
+      j += `do local ${vt}={} ${vt}["_"]=1 ${vt}=nil end `
     } else {
-      i++
+      j += `if type(math.pi)=="string" then local _=1 end `
     }
   }
-  return strings
+  return j
 }
 
-// ─── EXTRACT VARIABLES ────────────────────────────────────────────────────
-function extractVariables(code) {
-  const vars = new Set()
-  const regex = /\b([a-zA-Z_][a-zA-Z0-9_]*)\b/g
-  const keywords = new Set(['local', 'function', 'end', 'if', 'then', 'else', 'while', 'do', 'for', 'return', 'and', 'or', 'not', 'true', 'false', 'nil', 'print', 'table', 'string', 'math', 'type', 'pairs', 'ipairs', 'next', 'setmetatable', 'getmetatable', 'rawget', 'rawset', 'pcall', 'xpcall', 'error', 'assert'])
+function applyCFF(blocks) {
+  const stateVar = generateIlName()
+  let lua = `local ${stateVar}=${heavyMath(1)} while true do `
+  for (let i = 0; i < blocks.length; i++) {
+    if (i === 0) lua += `if ${stateVar}==${heavyMath(1)} then ${blocks[i]} ${stateVar}=${heavyMath(2)} `
+    else lua += `elseif ${stateVar}==${heavyMath(i + 1)} then ${blocks[i]} ${stateVar}=${heavyMath(i + 2)} `
+  }
+  lua += `elseif ${stateVar}==${heavyMath(blocks.length + 1)} then break end end `
+  return lua
+}
+
+function runtimeString(str) {
+  return `string.char(${str.split('').map(c => heavyMath(c.charCodeAt(0))).join(',')})`;
+}
+
+function buildTrueVM(payloadStr) {
+  const STACK = generateIlName(); const KEY = generateIlName(); const ORDER = generateIlName()
+  const SALT = generateIlName();
   
-  let match
-  while ((match = regex.exec(code)) !== null) {
-    if (!keywords.has(match[1])) {
-      vars.add(match[1])
+  const seed = Math.floor(Math.random() * 200) + 50
+  const saltVal = Math.floor(Math.random() * 250) + 1
+  
+  let vmCore = `local ${STACK}={} local ${KEY}=${heavyMath(seed)} local ${SALT}=${heavyMath(saltVal)} `
+  const chunkSize = 15; let realChunks = [];
+  for(let i = 0; i < payloadStr.length; i += chunkSize) { realChunks.push(payloadStr.slice(i, i + chunkSize)); }
+  let poolVars = []; let realOrder = [];
+  let totalChunks = realChunks.length * 3; let currentReal = 0; let globalIndex = 0;
+  
+  for(let i = 0; i < totalChunks; i++) {
+    let memName = generateIlName(); poolVars.push(memName);
+    if (currentReal < realChunks.length && (Math.random() > 0.5 || (totalChunks - i) === (realChunks.length - currentReal))) {
+      realOrder.push(i + 1);
+      let chunk = realChunks[currentReal]; let encryptedBytes = [];
+      for(let j = 0; j < chunk.length; j++) { 
+        let enc = (chunk.charCodeAt(j) + seed + (globalIndex * saltVal)) % 256;
+        encryptedBytes.push(heavyMath(enc)); 
+        globalIndex++;
+      }
+      vmCore += `local ${memName}={${encryptedBytes.join(',')}} `;
+      currentReal++;
+    } else {
+      let fakeBytes = []; let fakeLen = Math.floor(Math.random() * 20) + 5;
+      for(let j = 0; j < fakeLen; j++) { fakeBytes.push(heavyMath(Math.floor(Math.random() * 255))); }
+      vmCore += `local ${memName}={${fakeBytes.join(',')}} `;
     }
   }
-  return Array.from(vars)
-}
-
-// ─── GENERATE RANDOM VARIABLE NAME ────────────────────────────────────────
-function randomVarName() {
-  const styles = [
-    () => `L${Math.floor(Math.random() * 10)}_${Math.floor(Math.random() * 10)}`,
-    () => `_G_${Math.floor(Math.random() * 100000)}`,
-    () => `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}_${Math.floor(Math.random() * 1000)}`
-  ]
-  return styles[Math.floor(Math.random() * styles.length)]()
-}
-
-// ─── LURAPH VM BYTECODE GENERATOR ─────────────────────────────────────────
-function generateVM() {
-  return `
-local _VM_OPS = {
-  MOVE = 0x01,
-  LOADK = 0x02,
-  CALL = 0x03,
-  RETURN = 0x04,
-  JMP = 0x05,
-  EQ = 0x06,
-  LT = 0x07,
-  ADD = 0x08,
-  SUB = 0x09,
-  MUL = 0x0A,
-  DIV = 0x0B,
-  GETGLOBAL = 0x0C,
-  SETGLOBAL = 0x0D,
-  CONCAT = 0x0E,
-  FORLOOP = 0x0F,
-  FORINIT = 0x10
-}
-
-local _VM_STATE = {
-  pc = 0,
-  stack = {},
-  globals = {},
-  upvalues = {},
-  call_stack = {}
-}
-
-local function _VM_EXECUTE(bytecode)
-  _VM_STATE.pc = 0
-  local pc = 0
   
-  while pc < #bytecode do
-    local opcode = bytecode[pc + 1]
-    local arg1 = bytecode[pc + 2]
-    local arg2 = bytecode[pc + 3]
-    local arg3 = bytecode[pc + 4]
-    
-    if opcode == _VM_OPS.MOVE then
-      _VM_STATE.stack[arg1] = _VM_STATE.stack[arg2]
-    elseif opcode == _VM_OPS.LOADK then
-      _VM_STATE.stack[arg1] = _VM_STATE.globals[arg2]
-    elseif opcode == _VM_OPS.ADD then
-      _VM_STATE.stack[arg1] = _VM_STATE.stack[arg2] + _VM_STATE.stack[arg3]
-    elseif opcode == _VM_OPS.JMP then
-      pc = arg1 - 1
-    elseif opcode == _VM_OPS.CALL then
-      local func = _VM_STATE.stack[arg1]
-      if type(func) == "function" then
-        func(unpack(_VM_STATE.stack, arg2, arg2 + arg3 - 1))
-      end
-    elseif opcode == _VM_OPS.RETURN then
-      return _VM_STATE.stack[arg1]
-    end
-    
-    pc = pc + 4
-  end
+  vmCore += `local _pool={${poolVars.join(',')}} local ${ORDER}={${realOrder.map(n => heavyMath(n)).join(',')}} `;
+  const idxVar = generateIlName(); const byteVar = generateIlName();
   
-  return _VM_STATE.stack[1]
-end
-`
-}
-
-// ─── CONTROL FLOW FLATTENING ──────────────────────────────────────────────
-function flattenControlFlow(code) {
-  let result = code
-  let stateCounter = 0
-
-  // Flatten if statements
-  const ifPattern = /if\s+(.+?)\s+then\s+([\s\S]*?)\s+else\s+([\s\S]*?)\s+end/g
-  result = result.replace(ifPattern, (match, cond, action1, action2) => {
-    const stateVar = `_STATE_${stateCounter++}`
-    return `local ${stateVar} = 0
-if (${cond}) then ${stateVar} = 1 else ${stateVar} = 2 end
-while ${stateVar} ~= 0 do
-  if ${stateVar} == 1 then
-    ${action1}
-    ${stateVar} = 0
-  elseif ${stateVar} == 2 then
-    ${action2}
-    ${stateVar} = 0
-  end
-end`
-  })
-
-  // Flatten for loops
-  const forPattern = /for\s+(\w+)\s*=\s*(.+?),\s*(.+?)\s+do\s+([\s\S]*?)\s+end/g
-  result = result.replace(forPattern, (match, varName, start, end_, body) => {
-    const loopVar = `_LOOP_${stateCounter++}`
-    return `local ${varName} = ${start}
-local ${loopVar} = ${end_}
-while ${varName} <= ${loopVar} do
-  ${body}
-  ${varName} = ${varName} + 1
-end`
-  })
-
-  return result
-}
-
-// ─── ARITHMETIC OBFUSCATION ───────────────────────────────────────────────
-function obfuscateArithmetic(code) {
-  let result = code
+  vmCore += `local _gIdx=0 for _, ${idxVar} in ipairs(${ORDER}) do for _, ${byteVar} in ipairs(_pool[${idxVar}]) do `;
+  vmCore += `if type(math.pi)=="string" then ${KEY}=(${KEY}+137)%256 end `;
+  vmCore += `table.insert(${STACK}, string.char(math.floor((${byteVar} - ${KEY} - _gIdx * ${SALT}) % 256))) _gIdx=_gIdx+1 end end `;
   
-  // Obfuscate numeric literals
-  const numPattern = /\b(\d+)\b/g
-  result = result.replace(numPattern, (match) => {
-    const num = parseInt(match)
-    const methods = [
-      `(${num * 2}/2)`,
-      `(${num + 1}-1)`,
-      `(${num}+0)`,
-      `((${num/2})*2)`,
-      `(${Math.floor(num/5)}*5+${num % 5})`
-    ]
-    return methods[Math.floor(Math.random() * methods.length)]
-  })
-
-  return result
+  vmCore += `local _e = table.concat(${STACK}) ${STACK}=nil `;
+  const ASSERT = `getfenv()[${runtimeString("assert")}]`;
+  const LOADSTRING = `getfenv()[${runtimeString("loadstring")}]`;
+  const GAME = `getfenv()[${runtimeString("game")}]`;
+  const HTTPGET = runtimeString("HttpGet");
+  if (payloadStr.includes("http")) { vmCore += `${ASSERT}(${LOADSTRING}(${GAME}[${HTTPGET}](${GAME}, _e)))() ` } 
+  else { vmCore += `${ASSERT}(${LOADSTRING}(_e))() ` }
+  return vmCore
 }
 
-// ─── VARIABLE RENAMING ────────────────────────────────────────────────────
-function renameVariables(code, variables) {
-  let result = code
-  const varMap = {}
+function buildSingleVM(innerCode, handlerCount) {
+  const handlers = pickHandlers(handlerCount); const realIdx = Math.floor(Math.random() * handlerCount);
+  const DISPATCH = generateIlName(); let out = `local lM={} ` 
+  for (let i = 0; i < handlers.length; i++) {
+    if (i === realIdx) { out += `local ${handlers[i]}=function(lM) local lM=lM; ${generateJunk(5)} ${innerCode} end ` } 
+    else { out += `local ${handlers[i]}=function(lM) local lM=lM; ${generateJunk(3)} return nil end ` }
+  }
+  out += `local ${DISPATCH}={`
+  for (let i = 0; i < handlers.length; i++) { out += `[${heavyMath(i + 1)}]=${handlers[i]},` }
+  out += `} `
+  let execBlocks = []; for (let i = 0; i < handlers.length; i++) { execBlocks.push(`${DISPATCH}[${heavyMath(i + 1)}](lM)`) }
+  out += applyCFF(execBlocks); return out
+}
 
-  for (const varName of variables) {
-    const newName = randomVarName()
-    varMap[varName] = newName
-    
-    // Replace all occurrences
-    const regex = new RegExp(`\\b${varName}\\b`, 'g')
-    result = result.replace(regex, newName)
+function build18xVM(payloadStr) {
+  let vm = buildTrueVM(payloadStr);
+  for (let i = 0; i < 17; i++) {
+    vm = buildSingleVM(vm, Math.floor(Math.random() * 2) + 3); 
+  }
+  return vm;
+}
+
+function getExtraProtections() {
+  const antiDebuggers =
+    `local _adT=os.clock() for _=1,150000 do end if os.clock()-_adT>5.0 then while true do end end ` +
+    `if debug~=nil and debug.getinfo then local _i=debug.getinfo(1) if _i.what~="main" and _i.what~="Lua" then while true do end end end ` +
+    `local _adOk,_adE=pcall(function() error("__v") end) if not string.find(tostring(_adE),"__v") then while true do end end ` +
+    `if getmetatable(_G)~=nil then while true do end end ` +
+    `if type(print)~="function" then while true do end end `;
+
+  const rawTampers = [
+    `if math.pi<3.14 or math.pi>3.15 then _err() end`,
+    `if bit32 and bit32.bxor(10,5)~=15 then _err() end`,
+    `if type(tostring)~="function" then _err() end`,
+    `if not string.match("chk","^c.*k$") then _err() end`,
+    `if type(coroutine.create)~="function" then _err() end`,
+    `if type(table.concat)~="function" then _err() end`,
+    `local _tm1=os.time() local _tm2=os.time() if _tm2<_tm1 then _err() end`,
+    `if math.abs(-10)~=10 then _err() end`,
+    `if gcinfo and gcinfo()<0 then _err() end`,
+    `if type(next)~="function" then _err() end`,
+    `if string.len("a")~=1 then _err() end`,
+    `if type(table.insert)~="function" then _err() end`,
+    `if string.byte("Z",1)~=90 then _err() end`,
+    `if math.floor(-1/10)~=-1 then _err() end`,
+    `if (true and 1 or 2)~=1 then _err() end`,
+    `if type(1)~="number" then _err() end`,
+    `if type(pcall)~="function" then _err() end`
+  ];
+
+  let codeVaultGuards = "";
+  for(let t of rawTampers) {
+    const fnName = generateIlName();
+    const errName = generateIlName();
+    const injectedError = t.replace("_err()", `${errName}("!")`);
+    codeVaultGuards += `local ${fnName}=function() local ${errName}=error ${injectedError} end ${fnName}() `;
   }
 
-  return result
+  return antiDebuggers + codeVaultGuards;
 }
 
-// ─── DEAD CODE INJECTION ──────────────────────────────────────────────────
-function injectDeadCode(code) {
-  const deadCodePatterns = [
-    'local _d={}',
-    'if 1==2 then print("x") end',
-    'local _x=0 local _y=_x+1',
-    'function _noop() end',
-    'local _t=setmetatable({},{__index=function()end})',
-    'local _b=bit32.bxor(255,255)',
-    'while false do end',
-    'local _m=math.floor(999999999)'
-  ]
+// ==================== ENHANCED OBFUSCATION WITH UNVEILX ====================
 
-  const lines = code.split('\n')
-  const result = []
-
-  for (const line of lines) {
-    result.push(line)
-    if (Math.random() < 0.15) {
-      const deadCode = deadCodePatterns[Math.floor(Math.random() * deadCodePatterns.length)]
-      result.push(deadCode)
-    }
-  }
-
-  return result.join('\n')
-}
-
-// ─── STRING TABLE ENCRYPTION ──────────────────────────────────────────────
-function encryptStringTable(strings) {
-  const key = Math.floor(Math.random() * 256)
-  const table = {}
-
-  for (let i = 0; i < strings.length; i++) {
-    const encrypted = xorEncrypt(strings[i], key)
-    table[i] = encrypted
-  }
-
-  const tableStr = Object.entries(table)
-    .map(([idx, bytes]) => `[${idx}]={${bytes.join(',')}}`)
-    .join(',')
-
-  return {
-    key,
-    decryptor: `
-local _ST_ENC={${tableStr}}
-local _ST_KEY=${key}
-local function _ST_DEC(idx)
-  if not _ST_ENC[idx] then return "" end
-  local enc=_ST_ENC[idx]
-  local dec=""
-  for i=1,#enc do
-    dec=dec..string.char(enc[i]~_ST_KEY)
-  end
-  return dec
-end
-local ST=setmetatable({},{__index=function(t,k) return _ST_DEC(k) end})
-`
-  }
-}
-
-// ─── REPLACE STRINGS IN CODE ──────────────────────────────────────────────
-function replaceStringsInCode(code, strings) {
-  let result = code
-
-  for (let i = 0; i < strings.length; i++) {
-    const str = strings[i]
-    const escapedStr = str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const pattern = new RegExp(`["']${escapedStr}["']`, 'g')
-    result = result.replace(pattern, `ST[${i}]`)
-  }
-
-  return result
-}
-
-// ─── ANTI-DEBUG MACHINE ───────────────────────────────────────────────────
-function generateAntiDebug() {
-  return `
-local _ANTI_DEBUG = function()
-  if debug then
-    local _d1 = pcall(debug.getinfo, 1)
-    if _d1 then
-      local _d2 = pcall(debug.getlocal, 1, 1)
-      if _d2 then error("DEBUGGER DETECTED", 2) end
-    end
-  end
-  
-  if getfenv and getfenv() then
-    local _env = getfenv()
-    if _env.__DEBUGGER__ or _env.debug then
-      error("DEBUG ENV", 2)
-    end
-  end
-end
-
-_ANTI_DEBUG()
-`
-}
-
-// ─── ANTI-TAMPERING CHECKS ────────────────────────────────────────────────
-function generateAntiTampering() {
-  return `
-local _INTEGRITY_CHECK = function()
-  local _checks = {
-    string.byte == _G.string.byte,
-    string.char == _G.string.char,
-    type == _G.type,
-    pairs == _G.pairs
-  }
-  
-  for _,_check in ipairs(_checks) do
-    if not _check then
-      error("CODE MODIFIED", 2)
-    end
-  end
-end
-
-_INTEGRITY_CHECK()
-`
-}
-
-// ─── UPVALUE OBSCURING ────────────────────────────────────────────────────
-function wrapInUpvalues(code) {
-  return `
-local function _WRAPPER()
-  ${code}
-end
-
-_WRAPPER()
-`
-}
-
-// ─── MAIN OBFUSCATOR FUNCTION ─────────────────────────────────────────────
 function obfuscate(sourceCode) {
-  if (!sourceCode) return HEADER + '\nreturn'
-
-  let code = sourceCode
-
-  // 1. Extract strings
-  const strings = extractStrings(code)
+  if (!sourceCode) return '--ERROR'
   
-  // 2. Encrypt string table
-  const stringEncryption = encryptStringTable(strings)
+  const antiDebug = `local _clk=os.clock local _t=_clk() for _=1,150000 do end if os.clock()-_t>5.0 then while true do end end `
+  const extraProtections = getExtraProtections()
   
-  // 3. Replace strings with ST[idx]
-  code = replaceStringsInCode(code, strings)
+  // UNVEILX integrations
+  const entropyInjection = generateEntropyInjection();
+  const antiDecomp = getAntiDecompilationGuard();
+  const opaquePredicates = generateOpaquePredicates(12);
+  const phantomFuncs = generatePhantomFunctions(4);
+  const integrityCheck = generateIntegrityCheck();
+  const memoryObs = generateMemoryObfuscation();
   
-  // 4. Extract and rename variables
-  const variables = extractVariables(code)
-  code = renameVariables(code, variables)
+  let payloadToProtect = ""
+  const isLoadstringRegex = /loadstring\s*\(\s*game\s*:\s*HttpGet\s*\(\s*["']([^"']+)["']\s*\)\s*\)\s*\(\s*\)/i
+  const match = sourceCode.match(isLoadstringRegex)
+  if (match) { payloadToProtect = match[1] } 
+  else { payloadToProtect = detectAndApplyMappings(sourceCode) }
   
-  // 5. Flatten control flow
-  code = flattenControlFlow(code)
+  // Envuelve el payload con protecciones adicionales
+  const protectedPayload = generateSelfModifyingCode(buildVaultEncryption(payloadToProtect));
+  const finalVM = build18xVM(protectedPayload);
   
-  // 6. Obfuscate arithmetic
-  code = obfuscateArithmetic(code)
+  // Combina todas las técnicas de unveilX
+  const result = `${HEADER} ${generateJunk(50)} ${antiDebug} ${extraProtections} ${entropyInjection} ${antiDecomp} ${phantomFuncs} ${opaquePredicates} ${integrityCheck} ${memoryObs} ${generateJunk(30)} ${finalVM}`;
   
-  // 7. Inject dead code
-  code = injectDeadCode(code)
-  
-  // 8. Wrap in upvalues
-  code = wrapInUpvalues(code)
-  
-  // 9. Build final code
-  let final = HEADER + '\n'
-  final += generateVM() + '\n'
-  final += generateAntiDebug() + '\n'
-  final += generateAntiTampering() + '\n'
-  final += stringEncryption.decryptor + '\n'
-  final += code
-
-  return final
+  return result.replace(/\s+/g, " ").trim()
 }
 
 module.exports = { obfuscate }
