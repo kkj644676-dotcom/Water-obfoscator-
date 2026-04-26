@@ -1,94 +1,126 @@
-const HEADER = `-- [[ Protected by Veil Obfuscator ]]`;
+const HEADER = `--[[ this code it's protected by vvmer obfoscator ]]`
 
-// Sistema de nombres estilo Veil (Mezcla de cortos y largos dinámicos)
-function generateVeilName() {
-    const chars = "abcdefghijklmnopqrstuvwxyz";
-    const v = ["I", "A", "_", "r", "G", "z", "o", "b", "D", "u", "F", "O", "N", "B", "d", "J", "q", "C", "Z", "W", "y", "n", "l"];
-    if (Math.random() > 0.6) {
-        let res = "";
-        for(let i=0; i<8; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
-        return res + Math.floor(Math.random() * 999);
+// Cambiado de IL_POOL a registros de una Debug Machine
+const DEBUG_REGS = ["RAX", "RBX", "RCX", "RDX", "RSP", "RBP", "RSI", "RDI", "R8", "R9", "R10", "EAX", "EBX", "ST0", "XMM0", "PTR_"]
+const HANDLER_POOL = ["DB_OP", "SYS_CALL", "INT_80", "MEM_LOC", "IO_PORT"]
+
+function generateDebugName() {
+  const reg = DEBUG_REGS[Math.floor(Math.random() * DEBUG_REGS.length)]
+  const hex = Math.floor(Math.random() * 0xFFFFFF).toString(16).toUpperCase()
+  return reg + "_" + hex
+}
+
+function pickHandlers(count) {
+  const used = new Set()
+  const result = []
+  while (result.length < count) {
+    const base = HANDLER_POOL[Math.floor(Math.random() * HANDLER_POOL.length)]
+    const name = base + "_" + Math.floor(Math.random() * 999)
+    if (!used.has(name)) { used.add(name); result.push(name) }
+  }
+  return result
+}
+
+// 0% MATH CODE: Ahora devuelve el valor directo sin operaciones complejas
+function cleanValue(n) {
+  return typeof n === 'number' ? n : `"${n}"`;
+}
+
+const MAPEO = {
+  "ScreenGui":"Renaming","Frame":"Stringing","TextLabel":"Indirection",
+  "Humanoid":"Junk","Player":"Flow","RunService":"VM"
+};
+
+function detectAndApplyMappings(code) {
+  let modified = code, headers = "";
+  for (const [word, tech] of Object.entries(MAPEO)) {
+    const regex = new RegExp(`\\b${word}\\b`, "g");
+    if (regex.test(modified)) {
+      const v = generateDebugName();
+      headers += `local ${v}="${word}";`;
+      modified = modified.replace(regex, () => `game[${v}]`);
     }
-    return v[Math.floor(Math.random() * v.length)] + v[Math.floor(Math.random() * v.length)];
+  }
+  return headers + modified;
 }
 
-function heavyMath(n) {
-    return "0x" + n.toString(16).toUpperCase();
+function generateJunk(lines = 50) {
+  let j = ''
+  for (let i = 0; i < lines; i++) {
+    const r = Math.random()
+    const name = generateDebugName();
+    if (r < 0.3) j += `local ${name} = bit32.bxor(${Math.floor(Math.random()*100)}, ${Math.floor(Math.random()*100)}) `
+    else if (r < 0.6) j += `if not (bit32.band(1,1) == 1) then return end `
+    else j += `local ${name} = nil `
+  }
+  return j
 }
 
-// PROTECCIONES VMmer: Anti-EVM, Anti-Debug, Anti-Tamper
-function getProtections() {
-    return `
-    local _c = os.clock()
-    for _=1, 500000 do end
-    if os.clock() - _c > 1.5 then while true do end end
-    local _g = getfenv()
-    if _g.print ~= print or _g.loadstring ~= loadstring and _g.load ~= load then while true do end end
-    `;
+function applyCFF(blocks) {
+  const stateVar = generateDebugName()
+  let lua = `local ${stateVar} = 1 while true do `
+  for (let i = 0; i < blocks.length; i++) {
+    lua += `if ${stateVar} == ${i + 1} then ${blocks[i]} ${stateVar} = ${i + 2} `
+  }
+  lua += `elseif ${stateVar} == ${blocks.length + 1} then break end end `
+  return lua
 }
 
-// MOTOR DE VM: Rolling XOR Affine Cipher integrado en Veil
-function buildVeilVM(payloadStr) {
-    const seed = Math.floor(Math.random() * 250) + 1;
-    const salt = Math.floor(Math.random() * 15) + 1;
-    const STACK = generateVeilName();
-    
-    // Cifrado compatible con Railway/Vanilla Lua
-    let encryptedBytes = [];
-    for (let i = 0; i < payloadStr.length; i++) {
-        let b = (payloadStr.charCodeAt(i) + seed + (i * salt)) % 256;
-        encryptedBytes.push(heavyMath(b));
-    }
+function buildTrueVM(payloadStr) {
+  const STACK = generateDebugName(); 
+  const KEY = Math.floor(Math.random() * 255);
+  
+  // Implementación usando bit32 para el decode
+  let vmCore = `local ${STACK} = {} local _key = ${KEY} `
+  let bytes = [];
+  for(let i = 0; i < payloadStr.length; i++) {
+    // Simple XOR con bit32
+    bytes.push(payloadStr.charCodeAt(i) ^ KEY);
+  }
+  
+  vmCore += `local _data = {${bytes.join(',')}} `
+  vmCore += `for i=1, #_data do table.insert(${STACK}, string.char(bit32.bxor(_data[i], _key))) end `
+  vmCore += `local _e = table.concat(${STACK}) `
+  vmCore += `getfenv()["loadstring"](_e)() `
+  
+  return vmCore
+}
 
-    // Estructura de funciones locales masivas (Firma de Veil)
-    let vm = `return(function() 
-    local I,A,_,r,G,z,o,b,D,u,F,O,N,B,d,J,q,C,Z,W,y,n,l = string.byte,string.sub,string.char,string.gsub,string.rep,setmetatable,pcall,type,tostring,assert,unpack,string.pack,nil,nil,nil,nil,nil,math.floor,string.len,table.concat,rawget,rawequal,getfenv;
-    local _B = {${encryptedBytes.join(',')}};
-    ${getProtections()}
-    local ${STACK} = {};
-    for i=1, #_B do
-        local _val = (_B[i] - ${heavyMath(seed)} - ((i-1) * ${heavyMath(salt)})) % 256;
-        ${STACK}[i] = _(_val);
+function buildSingleVM(innerCode) {
+  const handlers = pickHandlers(3);
+  const DISPATCH = generateDebugName();
+  let out = `local ${handlers[0]} = function() ${innerCode} end `
+  out += `local ${handlers[1]} = function() ${generateJunk(5)} end `
+  out += `local ${handlers[2]} = function() return end `
+  
+  out += `local ${DISPATCH} = {${handlers[0]}, ${handlers[1]}, ${handlers[2]}} `
+  out += `${DISPATCH}[1]() `
+  return out
+}
+
+function getExtraProtections() {
+  // Uso de bit32 para anti-debug y validación de entorno
+  return `
+    local function _check()
+      if not bit32 or bit32.bxor(1,1) ~= 0 then while true do end end
+      if debug and debug.getinfo(1).what ~= "Lua" then while true do end end
     end
-    local _src = W(${STACK});
-    local _exec = u(loadstring(_src) or load(_src));
-    return _exec();
-    end)()`;
-    
-    return vm;
-}
-
-// 18 CAPAS DE VM (Encapsulamiento VMmer)
-function apply18Layers(payload) {
-    let current = buildVeilVM(payload);
-    for(let i=0; i<17; i++) {
-        const vName = generateVeilName();
-        // Cada capa es una clausura anónima estilo Veil
-        current = `return(function() local ${vName} = function() ${current} end return ${vName}() end)()`;
-    }
-    return current;
+    _check()
+  `;
 }
 
 function obfuscate(sourceCode) {
-    if (!sourceCode) return "-- [Error: No source]";
-
-    // Detectar si el código es un HttpGet para tratarlo como Payload directo
-    const isLoadstringRegex = /loadstring\s*\(\s*game\s*:\s*HttpGet\s*\(\s*["']([^"']+)["']\s*\)\s*\)\s*\(\s*\)/i;
-    const match = sourceCode.match(isLoadstringRegex);
-    let codeToEncrypt = sourceCode;
-    
-    if (match) {
-        codeToEncrypt = `loadstring(game:HttpGet("${match[1]}"))()`;
-    }
-
-    // Generar las 18 capas con el motor Veil
-    const finalCode = apply18Layers(codeToEncrypt);
-
-    // Salida final: Header + Junk + VM masiva en una línea
-    let junk = "";
-    for(let i=0; i<10; i++) junk += `local ${generateVeilName()}=${heavyMath(i)} `;
-    
-    return `${HEADER} ${junk} ${finalCode.replace(/\s+/g, " ").trim()}`;
+  if (!sourceCode) return '--ERROR'
+  
+  const protections = getExtraProtections()
+  let payload = detectAndApplyMappings(sourceCode)
+  
+  // Construcción de la Debug Machine VM
+  let finalVM = buildTrueVM(payload)
+  finalVM = buildSingleVM(finalVM) 
+  
+  const result = `${HEADER} ${generateJunk(20)} ${protections} ${finalVM}`
+  return result.replace(/\s+/g, " ").trim()
 }
 
-module.exports = { obfuscate };
+module.exports = { obfuscate }
